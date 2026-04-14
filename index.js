@@ -4,6 +4,7 @@ import { getUserProfile } from "./src/caching/caching.js";
 import likeRouter from "./src/routes/like.route.js";
 import searchRouter from "./src/routes/search.route.js";
 import leaderRouter from "./src/routes/leaderboard.route.js";
+import trendingRouter from "./src/routes/trending.route.js";
 
 const app = express();
 app.use(json());
@@ -37,7 +38,7 @@ app.get("/user/:id/profile",async (req,res) =>{
 app.use(likeRouter)
 app.use(searchRouter)
 app.use(leaderRouter)
-
+app.use(trendingRouter)
 
 app.listen(3000,()=>{
     console.log("Server running on port 3000");
