@@ -6,6 +6,7 @@ import searchRouter from "./src/routes/search.route.js";
 import leaderRouter from "./src/routes/leaderboard.route.js";
 import trendingRouter from "./src/routes/trending.route.js";
 import { rateLimiter } from "./src/rate-limiting/rate-limit-middleware.js";
+import { roleRateLimiter } from "./src/rate-limiting/rate-limiter-roles-middleware.js";
 
 const app = express();
 app.use(json());
@@ -19,7 +20,7 @@ app.post("/post/comment", rateLimiter("comment"),(req,res)=>{
     res.json("SUCCSS...")
 })
 
-app.get("/login", rateLimiter("login"),(req,res)=>{
+app.get("/login", roleRateLimiter("api"),(req,res)=>{
     res.json("SUCCESS...")
 })
 
