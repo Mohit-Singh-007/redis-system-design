@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { emailQueue, retryQueue } from "./queue.js";
+import { delayQueue, emailQueue, retryQueue } from "./queue.js";
 
 const queueRouter = Router();
 
@@ -40,6 +40,26 @@ queueRouter.post("/retry",async (req,res)=>{
 
 
     res.json({message:"Retry route hit, Worker will now execute it..."})
+})
+
+
+queueRouter.post("/delay",async(req,res)=>{
+
+    console.log("HIT DELAY ROUTE")
+
+    const user = {id:"1",name:"Mohit"}
+    await delayQueue.add("send-delay-email",{
+        id: user.id,
+        name: user.name
+    },{delay: 5000,
+        
+        attempts:3,
+        backoff:{
+            type:"exponential",
+            delay: 1000
+        }
+    })
+    res.json({ message: "Job scheduled after 5 seconds" });
 })
 
 export default queueRouter;

@@ -28,6 +28,7 @@ const retryWorker = new Worker("retry-queue", async(job)=>{
     console.log("Rety worker executed !");
 },{connection:bullRedis})
 
+// logs
 retryWorker.on("completed", (job) => {
   console.log(`Job ${job.id} completed`);
 });
@@ -35,3 +36,18 @@ retryWorker.on("completed", (job) => {
 retryWorker.on("failed", (job, err) => {
   console.log(`Job ${job.id} failed: ${err.message}`);
 });
+
+
+
+
+// delayed execution
+const delayWorker = new Worker("delay-queue",async(job)=>{
+  console.log("EXECUTING JOB: ",job.name)
+  console.log("DATA: ",job.data)
+  
+  // simulate sending
+  await new Promise(res => setTimeout(res, 2000));
+  console.log("DELAYED Email sent!");
+
+
+},{connection: bullRedis})
