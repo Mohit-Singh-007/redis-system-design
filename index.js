@@ -7,6 +7,7 @@ import leaderRouter from "./src/routes/leaderboard.route.js";
 import trendingRouter from "./src/routes/trending.route.js";
 import { rateLimiter } from "./src/rate-limiting/rate-limit-middleware.js";
 import { roleRateLimiter } from "./src/rate-limiting/rate-limiter-roles-middleware.js";
+import queueRouter from "./src/queue/user.route.js";
 
 const app = express();
 app.use(json());
@@ -15,14 +16,16 @@ app.use(json());
 app.post("/login",rateLimiter("login"),(req,res)=>{
     res.json({message:"Login OK..passed through rate-limiter"})
 })
-
 app.post("/post/comment", rateLimiter("comment"),(req,res)=>{
     res.json("SUCCSS...")
 })
-
 app.get("/login", roleRateLimiter("api"),(req,res)=>{
     res.json("SUCCESS...")
 })
+
+
+// bullmq
+app.use(queueRouter)
 
 // incr view on each page visit
 app.get("/post/:id", async (req,res)=>{

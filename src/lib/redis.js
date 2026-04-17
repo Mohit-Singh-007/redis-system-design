@@ -8,6 +8,17 @@ export const redis = new Redis({
   enableReadyCheck: true,
 });
 
+
+export const bullRedis = new Redis({
+  host: "127.0.0.1",
+  port: 6379,
+  maxRetriesPerRequest: null, // required
+});
+
+bullRedis.on("connect", () => {
+  console.log("🚀 BullMQ Redis connected");
+});
+
 redis.on("connect", () => {
   console.log("✅ Redis connected");
 });
