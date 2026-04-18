@@ -100,7 +100,7 @@ new Worker("idempotency-queue",async(job)=>{
 
 
 
-
+//  lock first -> then idempotency check
 new Worker("lock-queue",async(job)=>{
 
   const email =  job.data?.email
@@ -109,13 +109,7 @@ new Worker("lock-queue",async(job)=>{
   const key = `done:email:${email}`
   const lockKey = `lock:email:${email}`
 
-  // 1. check idempotency is already processed
-  const isSet = await redis.get(key)
-  if(!isSet){
-    console.log(" Already processed, skipping:", email);
-    return;
-  }
-
+  
   // lock 
   const lock = await redis.set(lockKey,"1","NX","EX",30)
   if (!lock) {
@@ -125,6 +119,13 @@ new Worker("lock-queue",async(job)=>{
 
   // process the job
   try{
+
+    const isSet = await redis.get(key)
+    if(isSet){
+    console.log(" Already processed, skipping:", email);
+    return;
+   }
+
      console.log(" PROCESSING:", job.id, email);
 
       // simulate work
@@ -143,4 +144,7 @@ new Worker("lock-queue",async(job)=>{
   }
 
 
-},{connection:bullRedis,concurrency:3})
+},{connection:bullRedis,concurrency:3,limiter:{
+  max: 2,
+  duration: 5000
+}})

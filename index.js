@@ -8,6 +8,7 @@ import trendingRouter from "./src/routes/trending.route.js";
 import { rateLimiter } from "./src/rate-limiting/rate-limit-middleware.js";
 import { roleRateLimiter } from "./src/rate-limiting/rate-limiter-roles-middleware.js";
 import queueRouter from "./src/queue/user.route.js";
+import userRouter from "./src/mini-implementation/user-service.js";
 
 const app = express();
 app.use(json());
@@ -26,6 +27,10 @@ app.get("/login", roleRateLimiter("api"),(req,res)=>{
 
 // bullmq
 app.use(queueRouter)
+
+
+// implementation
+app.use(userRouter)
 
 // incr view on each page visit
 app.get("/post/:id", async (req,res)=>{
