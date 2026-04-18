@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { delayQueue, emailQueue, retryQueue } from "./queue.js";
+import { cronQueue, delayQueue, emailQueue, retryQueue } from "./queue.js";
 
 const queueRouter = Router();
 
@@ -61,5 +61,27 @@ queueRouter.post("/delay",async(req,res)=>{
     })
     res.json({ message: "Job scheduled after 5 seconds" });
 })
+
+
+
+queueRouter.post("/cron",async(req,res)=>{
+
+    
+    await cronQueue.add("cron-job",{},{
+        jobId:"cron-logs-job",
+        repeat:{
+            pattern: "*/10 * * * * *"
+        },
+        attempts: 3,
+        backoff:{
+            type:"exponential",
+            delay: 1000
+        }
+    })
+    res.json({ message: "CronJob scheduled after 10 seconds" });
+})
+
+
+
 
 export default queueRouter;

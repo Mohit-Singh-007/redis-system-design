@@ -51,3 +51,18 @@ const delayWorker = new Worker("delay-queue",async(job)=>{
 
 
 },{connection: bullRedis})
+
+
+// cron jobs
+
+const cronWorker = new Worker("cron-queue",async(job)=>{
+  console.log("EXECUTING JOB: ",job.name)
+  console.log("DATA: ",job.data)
+},{connection: bullRedis})
+
+
+
+// concurrency -> 1 worker in parallel -> multiple jobs
+const concurrencyWorker = new Worker("concurrency-queue",async(job)=>{
+  console.log("EXECUTING JOB: ",job.name)
+},{connection: bullRedis,concurrency: 5}) 
