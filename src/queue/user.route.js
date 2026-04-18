@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { cronQueue, delayQueue, emailQueue, retryQueue } from "./queue.js";
+import { concurrencyQueue, cronQueue, delayQueue, emailQueue, idempotencyQueue, retryQueue } from "./queue.js";
 
 const queueRouter = Router();
 
@@ -81,6 +81,37 @@ queueRouter.post("/cron",async(req,res)=>{
     res.json({ message: "CronJob scheduled after 10 seconds" });
 })
 
+
+
+queueRouter.post("/concurrent",async(req,res)=>{
+
+    
+    await concurrencyQueue.add("concurrency-job",{},{
+        attempts: 3,
+        backoff:{
+            type:"exponential",
+            delay: 1000
+        }
+    })
+    res.json({ message: "concurrency jobs by a worker" });
+})
+
+
+queueRouter.post("/idem/signup",async(req,res)=>{
+
+    const {email} = req.body;
+
+    await idempotencyQueue.add("idempotency-job",{
+        email
+    },{
+        attempts: 3,
+        backoff:{
+            type:"exponential",
+            delay: 1000
+        }
+    })
+    res.json({ message: "IDEMPOTENCY QUEUE -> Mail sent" });
+})
 
 
 

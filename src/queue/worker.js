@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { bullRedis } from "../lib/redis.js";
+import { bullRedis, redis } from "../lib/redis.js";
 
 const worker = new Worker("email-queue", async(job)=>{
     console.log("PROCESSING JOB: ",job.name)
@@ -53,16 +53,47 @@ const delayWorker = new Worker("delay-queue",async(job)=>{
 },{connection: bullRedis})
 
 
-// cron jobs
 
+
+// cron jobs
 const cronWorker = new Worker("cron-queue",async(job)=>{
   console.log("EXECUTING JOB: ",job.name)
+  // simulate sending
+  await new Promise(res => setTimeout(res, 2000));
   console.log("DATA: ",job.data)
 },{connection: bullRedis})
 
 
 
+
+
 // concurrency -> 1 worker in parallel -> multiple jobs
 const concurrencyWorker = new Worker("concurrency-queue",async(job)=>{
-  console.log("EXECUTING JOB: ",job.name)
+   console.log("START:", job.id);
+
+    await new Promise(res => setTimeout(res, 2000));
+
+    console.log("DONE:", job.id);
 },{connection: bullRedis,concurrency: 5}) 
+
+
+
+
+// idempotency worker
+new Worker("idempotency-queue",async(job)=>{
+
+  console.log("START:", job.id);
+  // redis use [idempotency key]
+  const key = `email:sent:${job.data?.email}`
+
+  // idempotency check
+  const isSet = await redis.set(key,"1","NX","EX",3600)
+
+  if(!isSet){
+     console.log("Duplicate job skipped:", job.data.email);
+      return;
+  }
+  await new Promise(res => setTimeout(res, 2000));
+
+    console.log(" Email sent to:", job.data.email);
+},{connection:bullRedis})
