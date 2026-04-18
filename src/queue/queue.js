@@ -13,3 +13,7 @@ export const concurrencyQueue = new Queue("concurrency-queue",{connection: bullR
 
 
 export const idempotencyQueue = new Queue("idempotency-queue",{connection: bullRedis})
+
+export const lockQueue = new Queue("lock-queue",{connection: bullRedis})
+
+

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { concurrencyQueue, cronQueue, delayQueue, emailQueue, idempotencyQueue, retryQueue } from "./queue.js";
+import { concurrencyQueue, cronQueue, delayQueue, emailQueue, idempotencyQueue, lockQueue, retryQueue } from "./queue.js";
 
 const queueRouter = Router();
 
@@ -113,6 +113,20 @@ queueRouter.post("/idem/signup",async(req,res)=>{
     res.json({ message: "IDEMPOTENCY QUEUE -> Mail sent" });
 })
 
+queueRouter.post("/lock/signup",async(req,res)=>{
 
+    const {email} = req.body;
+
+    await lockQueue.add("lock-job",{
+        email
+    },{
+        attempts: 3,
+        backoff:{
+            type:"exponential",
+            delay: 1000
+        }
+    })
+    res.json({ message: "LOCK QUEUE -> Mail sent" });
+})
 
 export default queueRouter;

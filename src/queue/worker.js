@@ -97,3 +97,50 @@ new Worker("idempotency-queue",async(job)=>{
 
     console.log(" Email sent to:", job.data.email);
 },{connection:bullRedis})
+
+
+
+
+new Worker("lock-queue",async(job)=>{
+
+  const email =  job.data?.email
+
+  // create lock and idempotency key
+  const key = `done:email:${email}`
+  const lockKey = `lock:email:${email}`
+
+  // 1. check idempotency is already processed
+  const isSet = await redis.get(key)
+  if(!isSet){
+    console.log(" Already processed, skipping:", email);
+    return;
+  }
+
+  // lock 
+  const lock = await redis.set(lockKey,"1","NX","EX",30)
+  if (!lock) {
+      console.log(" Another worker is processing:", email);
+      return;
+  }
+
+  // process the job
+  try{
+     console.log(" PROCESSING:", job.id, email);
+
+      // simulate work
+      await new Promise(res => setTimeout(res, 2000));
+
+      console.log("Email sent:", email);
+
+      //  mark as done
+      await redis.set(key, "1", "EX", 3600);
+
+  }catch{
+    throw new Error("Error"); // throw -> retry will work in bullmq
+
+  }finally{
+    await redis.del(lockKey)
+  }
+
+
+},{connection:bullRedis,concurrency:3})
